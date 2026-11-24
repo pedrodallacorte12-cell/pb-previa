@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Apartamento · Bento Gonçalves/RS — Protótipo Pré-Renderizado (Cycles)</title>
+  <style>
+    :root {
+      --bg: #161618;
+      --ink: #f5f0e8;
+      --muted: rgba(245, 240, 232, 0.68);
+      --accent: #c5a173;
+      --glass: rgba(22, 22, 24, 0.62);
+      --border: rgba(245, 240, 232, 0.14);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Inter', 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Altura de rolagem proporcional ao tour (8 ambientes suaves) */
+    #scroll-track {
+      position: relative;
+      height: 760vh;
+    }
+
+    /* Palco fixo em tela cheia */
+    .stage {
+      position: sticky;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #141416;
+    }
+
+    canvas#visor {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Vinheta sutil para legibilidade tipográfica */
+    .vignette {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(to bottom, rgba(16, 16, 18, 0.52) 0%, transparent 22%),
+        linear-gradient(to top, rgba(16, 16, 18, 0.72) 0%, transparent 32%);
+    }
+
+    /* Cabeçalho minimalista */
+    header.topo {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 32px;
+      pointer-events: none;
+    }
+    .marca {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .marca small {
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .marca h1 {
+      font-size: clamp(16px, 1.8vw, 22px);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+    }
+    .badge {
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .badge .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    /* Painel editorial do ambiente atual */
+    .hud-comodo {
+      position: absolute;
+      left: 32px;
+      bottom: 36px;
+      z-index: 10;
+      max-width: 440px;
+      padding: 20px 24px;
+      border-radius: 14px;
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      transition: transform 0.35s ease, opacity 0.35s ease;
+    }
+    .hud-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .hud-titulo {
+      font-size: clamp(22px, 2.6vw, 32px);
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .hud-texto {
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    /* Navegação clicável por cômodos */
+    nav.comodos {
+      position: absolute;
+      right: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    nav.comodos button {
+      appearance: none;
+      border: 1px solid transparent;
+      background: rgba(22, 22, 24, 0.42);
+      backdrop-filter: blur(8px);
+      color: var(--muted);
+      font: inherit;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-align: right;
+      padding: 7px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+    }
+    nav.comodos button:hover {
+      color: var(--ink);
+      border-color: var(--border);
+    }
+    nav.comodos button.ativo {
+      color: var(--ink);
+      background: rgba(197, 161, 115, 0.22);
+      border-color: rgba(197, 161, 115, 0.55);
+    }
+
+    /* Barra de progresso do scroll */
+    .progresso-wrap {
+      position: absolute;
+      left: 32px;
+      right: 32px;
+      bottom: 14px;
+      height: 2px;
+      background: rgba(245, 240, 232, 0.14);
+      z-index: 10;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progresso-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #f5e6cf);
+      transition: width 0.08s linear;
+    }
+
+    /* Dica de scroll inicial */
+    .dica-scroll {
+      position: absolute;
+      left: 50%;
+      bottom: 34px;
+      transform: translateX(-50%);
+      z-index: 10;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    .dica-scroll.oculto { opacity: 0; }
+
+    /* Tela de carregamento inicial */
+    #loader {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      background: #151517;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    #loader.pronto {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .loader-titulo {
+      font-size: 13px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 400;
+    }
+    .loader-sub {
+      font-size: 26px;
+      font-weight: 200;
+      letter-spacing: 0.04em;
+    }
+    .loader-barra {
+      width: min(280px, 70vw);
+      height: 2px;
+      background: rgba(245, 240, 232, 0.15);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .loader-barra > i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.15s ease;
+    }
+    .loader-pct {
+      font-size: 12px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 900px) {
+      header.topo { padding: 14px 16px; }
+      .badge span.extra { display: none; }
+      .hud-comodo {
+        left: 14px;
+        right: 14px;
+        bottom: 24px;
+        max-width: none;
+        padding: 14px 16px;
+      }
+      nav.comodos { display: none; }
+      .dica-scroll { display: none; }
+      .progresso-wrap { left: 14px; right: 14px; bottom: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="loader" role="status" aria-live="polite">
+    <div class="loader-titulo">Patricia Brum Arquitetura</div>
+    <div class="loader-sub">Apartamento · Bento Gonçalves</div>
+    <div class="loader-barra"><i id="loader-fill"></i></div>
+    <div class="loader-pct" id="loader-pct">Preparando sequência Cycles…</div>
+  </div>
+
+  <div id="scroll-track">
+    <div class="stage">
+      <canvas id="visor" aria-label="Tour pré-renderizado pelo interior do Apartamento em Bento Gonçalves"></canvas>
+      <div class="vignette"></div>
+
+      <header class="topo">
+        <div class="marca">
+          <small>Projeto de Interiores · Portfólio pp. 48–51</small>
+          <h1>Apartamento · Bento Gonçalves / RS</h1>
+        </div>
+        <div class="badge" id="status-badge">
+          <span class="dot"></span>
+          <span id="status-txt">Cycles · Carregando</span>
+        </div>
+      </header>
+
+      <aside class="hud-comodo" aria-live="polite">
+        <div class="hud-eyebrow" id="hud-eyebrow">01 / 08 · Planta</div>
+        <h2 class="hud-titulo" id="hud-titulo">A planta inteira</h2>
+        <p class="hud-texto" id="hud-texto">
+          Vista em corte do apartamento: todos os ambientes de um mesmo projeto, do estar à suíte.
+        </p>
+      </aside>
+
+      <nav class="comodos" id="nav-comodos" aria-label="Ambientes do apartamento"></nav>
+
+      <div class="dica-scroll" id="dica-scroll">Role para explorar ↓</div>
+
+      <div class="progresso-wrap">
+        <div class="progresso-fill" id="progresso-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (async function () {
+      // Mesmos cômodos e ordem exata do COMODOS_DEF em src/cena/roteiro.ts
+      const COMODOS = [
+        { id: 'planta', nome: 'A planta', titulo: 'A planta inteira', texto: 'Vista em corte do apartamento: todos os ambientes de um mesmo projeto, do estar à suíte.', p0: 0.0, p1: 0.13 },
+        { id: 'estar', nome: 'Sala de estar', titulo: 'Sala de estar', texto: 'Estar integrado à cozinha, sofá claro e painel de TV em madeira com nichos iluminados e lareira.', p0: 0.13, p1: 0.27 },
+        { id: 'cozinha', nome: 'Cozinha', titulo: 'Cozinha integrada', texto: 'Cozinha aberta para o estar, com ilha central em dois níveis, tampo de pedra e marcenaria clara.', p0: 0.27, p1: 0.41 },
+        { id: 'jantar', nome: 'Jantar', titulo: 'Sala de jantar', texto: 'Mesa longa branca ovalada, cadeiras claras e paredão ripado de madeira com sanca LED e aparador.', p0: 0.41, p1: 0.55 },
+        { id: 'sacada', nome: 'Sacada', titulo: 'Sacada curva', texto: 'Sacada integrada ao living e ao jantar, aberta para a cidade com poltronas claras e vegetação.', p0: 0.55, p1: 0.67 },
+        { id: 'suite', nome: 'Suíte', titulo: 'Suíte master', texto: 'Cabeceira em painéis verticais bege, cama em camadas, criados ovais com luminárias douradas e luz suave.', p0: 0.67, p1: 0.80 },
+        { id: 'banheiro', nome: 'Banheiro', titulo: 'Banheiro (ilustrativo)', texto: 'Modelado no estilo do projeto — bancada ripada com cubas duplas e espelho retroiluminado (ilustrativo).', p0: 0.80, p1: 0.90 },
+        { id: 'dormitorio', nome: 'Dormitório', titulo: 'Dormitório (ilustrativo)', texto: 'Mesmo desenho da suíte em versão compacta, com escrivaninha iluminada em carvalho.', p0: 0.90, p1: 1.00 },
+      ];
+
+      const isMobile = window.matchMedia('(max-width: 900px)').matches;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const pasta = isMobile ? './sequencia-interior/mobile' : './sequencia-interior/desktop';
+
+      let totalFrames = 60;
+      try {
+        const res = await fetch('./sequencia-interior/manifest.json', { cache: 'no-cache' });
+        if (res.ok) {
+          const meta = await res.json();
+          if (meta && meta.frames) totalFrames = meta.frames;
+        }
+      } catch (_) {}
+
+      const canvas = document.getElementById('visor');
+      const ctx = canvas.getContext('2d', { alpha: false });
+      const loader = document.getElementById('loader');
+      const loaderFill = document.getElementById('loader-fill');
+      const loaderPct = document.getElementById('loader-pct');
+      const statusTxt = document.getElementById('status-txt');
+      const hudEyebrow = document.getElementById('hud-eyebrow');
+      const hudTitulo = document.getElementById('hud-titulo');
+      const hudTexto = document.getElementById('hud-texto');
+      const progFill = document.getElementById('progresso-fill');
+      const dicaScroll = document.getElementById('dica-scroll');
+      const navEl = document.getElementById('nav-comodos');
+      const track = document.getElementById('scroll-track');
+
+      const frames = new Array(totalFrames).fill(null);
+      let loadedCount = 0;
+      let currentFrame = 0;
+      let targetFrame = 0;
+      let lastDrawn = -1;
+      let activeComodoIdx = -1;
+
+      // Monta botões de navegação
+      const botoes = COMODOS.map((c, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = c.nome;
+        btn.addEventListener('click', () => {
+          const mid = (c.p0 + c.p1) * 0.5;
+          const maxScroll = track.offsetHeight - window.innerHeight;
+          window.scrollTo({ top: mid * maxScroll, behavior: reducedMotion ? 'auto' : 'smooth' });
+        });
+        navEl.appendChild(btn);
+        return btn;
+      });
+
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round(window.innerWidth * dpr);
+        canvas.height = Math.round(window.innerHeight * dpr);
+        lastDrawn = -1;
+        desenhar(Math.round(currentFrame));
+      }
+      window.addEventListener('resize', resize);
+
+      // Cover fit mantendo proporção 16:9 sem distorção
+      function desenhar(idx) {
+        const clamped = Math.max(0, Math.min(totalFrames - 1, idx));
+        let img = frames[clamped];
+        // Se quadro exato ainda não chegou, busca vizinho mais próximo já carregado
+        if (!img) {
+          for (let d = 1; d < totalFrames; d++) {
+            if (clamped - d >= 0 && frames[clamped - d]) { img = frames[clamped - d]; break; }
+            if (clamped + d < totalFrames && frames[clamped + d]) { img = frames[clamped + d]; break; }
+          }
+        }
+        if (!img) return;
+        const cw = canvas.width;
+        const ch = canvas.height;
+        const iw = img.naturalWidth || img.width;
+        const ih = img.naturalHeight || img.height;
+        const scale = Math.max(cw / iw, ch / ih);
+        const dw = iw * scale;
+        const dh = ih * scale;
+        const dx = (cw - dw) * 0.5;
+        const dy = (ch - dh) * 0.5;
+        ctx.drawImage(img, dx, dy, dw, dh);
+      }
+
+      function atualizarHUD(p) {
+        progFill.style.width = (p * 100).toFixed(2) + '%';
+        if (p > 0.02) dicaScroll.classList.add('oculto');
+        else dicaScroll.classList.remove('oculto');
+
+        let idx = COMODOS.length - 1;
+        for (let i = 0; i < COMODOS.length; i++) {
+          if (p <= COMODOS[i].p1) { idx = i; break; }
+        }
+        if (idx !== activeComodoIdx) {
+          activeComodoIdx = idx;
+          const c = COMODOS[idx];
+          hudEyebrow.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(COMODOS.length).padStart(2, '0') + ' · ' + c.nome;
+          hudTitulo.textContent = c.titulo;
+          hudTexto.textContent = c.texto;
+          botoes.forEach((b, i) => b.classList.toggle('ativo', i === idx));
+        }
+      }
+
+      function onScroll() {
+        const maxScroll = Math.max(1, track.offsetHeight - window.innerHeight);
+        const p = Math.max(0, Math.min(1, window.scrollY / maxScroll));
+        targetFrame = p * (totalFrames - 1);
+        atualizarHUD(p);
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+
+      // Ordem inteligente de pré-carregamento: primeiro frame 0 + 1 em cada 4 (cobertura instantânea), depois o restante
+      const ordem = [];
+      for (let i = 0; i < totalFrames; i += 4) ordem.push(i);
+      for (let i = 0; i < totalFrames; i++) if (i % 4 !== 0) ordem.push(i);
+
+      function carregarFrame(idx) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.decoding = 'async';
+          const num = String(idx).padStart(3, '0');
+          img.onload = () => {
+            frames[idx] = img;
+            loadedCount++;
+            const pct = Math.round((loadedCount / totalFrames) * 100);
+            loaderFill.style.width = pct + '%';
+            loaderPct.textContent = `Carregando ${loadedCount}/${totalFrames} quadros (${pct}%)`;
+            statusTxt.textContent = loadedCount === totalFrames
+              ? `Cycles · ${isMobile ? '900px' : '1600px'} · ${totalFrames}q`
+              : `Cycles · ${pct}%`;
+            if (idx === 0 || loadedCount >= Math.min(10, totalFrames)) {
+              loader.classList.add('pronto');
+              if (lastDrawn < 0) {
+                desenhar(Math.round(currentFrame));
+                lastDrawn = Math.round(currentFrame);
+              }
+            }
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.src = `${pasta}/frame_${num}.webp`;
+        });
+      }
+
+      // Pool concorrente de 6 downloads simultâneos
+      let cursor = 0;
+      async function worker() {
+        while (cursor < ordem.length) {
+          const idx = ordem[cursor++];
+          await carregarFrame(idx);
+        }
+      }
+
+      resize();
+      onScroll();
+      Promise.all(Array.from({ length: 6 }, worker));
+
+      function loop() {
+        const alpha = reducedMotion ? 1.0 : 0.16;
+        currentFrame += (targetFrame - currentFrame) * alpha;
+        const idx = Math.round(currentFrame);
+        if (idx !== lastDrawn && frames[idx]) {
+          desenhar(idx);
+          lastDrawn = idx;
+        }
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

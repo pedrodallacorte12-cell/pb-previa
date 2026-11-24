@@ -1,0 +1,26 @@
+{
+  "projeto": "Apartamento · Bento Gonçalves/RS",
+  "frames": 60,
+  "desktop": {
+    "width": 1600,
+    "height": 900,
+    "totalBytes": 2262508,
+    "avgKB": 36.8
+  },
+  "mobile": {
+    "width": 900,
+    "height": 506,
+    "totalBytes": 1003992,
+    "avgKB": 16.3
+  },
+  "ordem": [
+    "planta",
+    "estar",
+    "cozinha",
+    "jantar",
+    "sacada",
+    "suite",
+    "banheiro",
+    "dormitorio"
+  ]
+}
