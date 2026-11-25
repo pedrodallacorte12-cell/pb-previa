@@ -27,3 +27,26 @@ Todos os modelos de veículos e pedestres adicionados em `public/modelos/` são 
 - **Pacote:** Quaternius *Universal Animation Library* (versão gratuita padrão, espelho `J-Ponzo/gltf-universal-animation-library`)
 - **Licença:** CC0 1.0 Universal
 - **Uso:** Referência local no worktree (não empacotada no build de produção).
+
+## Texturas PBR e Geometrias Procedurais (Rodada 2 — Prédios Vizinhos, Lago e Ciclistas)
+
+- **Texturas PBR reutilizadas:** mapas WebP CC0 já presentes em `public/texturas/pbr/` (`reboco`, `concreto`, `tijolo`, `telha`, `grama`, `asfalto`), `public/texturas/waternormals.webp` e mapas cerâmicos de pastilha do projeto em `public/texturas/unique/pastilha_*.webp`.
+- **Ativos procedurais adicionados em código (domínio próprio / CC0):** atlas procedural de janelas/vitrines e pele de vidro (`CanvasTexture`), lona de toldo, areia/seixos ribeirinhos, geometrias de esquadrias com profundidade, rochas deformadas, tufos de junco ribeirinho e ciclistas instanciados. Nenhum ativo pago ou proprietário adicionado.
+## Iluminação / Céu HDRI (`public/hdri/kloofendal_48d_partly_cloudy_puresky_1k.hdr`, `_512.hdr`)
+
+- **Ativo original:** *Kloofendal 48d Partly Cloudy (Pure Sky)*
+- **Autores:** Greg Zaal (captura original), Jarod Guest (edição pure sky)
+- **Fonte oficial:** Poly Haven — https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky
+- **Download 1K:** https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/kloofendal_48d_partly_cloudy_puresky_1k.hdr
+- **Licença:** CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+- **Adaptações:** Versão desktop mantida em 1K (`1024×512`, 1,43 MB) e versão mobile reamostrada em radiância linear 2×2 para `512×256` (`kloofendal_48d_partly_cloudy_puresky_512.hdr`, 380 KB), com rotação Y (`+0,1846 rad`) alinhando o disco solar do HDRI (elevação 48,0°, azimute 34,3°) ao sol direcional rasante 3/4 da cena (elevação 46,5°, azimute 23,7°).
+
+## Pedestres adicionais (`pessoa_h_mangalonga.glb`, `pessoa_h_camisa.glb`, `pessoa_m_alternativa.glb`, `pessoa_m_regata.glb`)
+
+- **Autor:** Quaternius — *Animated Men Characters* / *Animated Women Characters* (Feb 2019), arquivos `Smooth_Male_LongSleeve.fbx`, `Smooth_Male_Shirt.fbx`, `Smooth_Female_Alternative.fbx`, `Smooth_Female_TankTop.fbx`
+- **Espelho público:** https://github.com/beep2bleep/FreeAssetsByKenneyNLandQuaternius — **Licença:** CC0 1.0
+- **Adaptações:** `scripts/converter_quaternius.py` (paleta UV 8×1 no mesmo padrão dos demais, clipes Walk/Idle, altura real, decimação 40 %, meshopt).
+
+## Carros adicionais (`modelos/carros/*.glb`)
+
+- Variantes geradas por `scripts/gerar_carros_variantes.py` a partir do gerador procedural próprio (`scripts/gerar_carros_blender.py`) — sem assets de terceiros.
