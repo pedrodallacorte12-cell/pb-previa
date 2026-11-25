@@ -1,4 +1,4 @@
-import{Bn as e,Kn as t,Pt as n,Un as r,wn as i}from"./events-e51d7528.esm-BBOnX4Hz.js";import{t as a}from"./Gltf-DLa3qgI9.js";var o=t(r(),1),s=i(),c=e(`modelos/montanhas.glb`);function l(){let{scene:e}=a(c,!1,!0),t=(0,o.useMemo)(()=>{let t=e.clone(!0);return t.traverse(e=>{let t=e;if(!t.isMesh)return;let r=new n({color:`#ffffff`,vertexColors:!0,roughness:.96,metalness:0,envMapIntensity:.35,fog:!0,side:0});r.customProgramCacheKey=()=>`serra_montanhas_micro_atm`,r.onBeforeCompile=e=>{e.vertexShader=e.vertexShader.replace(`#include <common>`,`#include <common>
+import{En as e,Ft as t,Gn as n,Hn as r,Jn as i}from"./events-e51d7528.esm-BMBK5n3J.js";import{t as a}from"./Gltf-CxBJOx5W.js";var o=i(n(),1),s=e(),c=r(`modelos/montanhas.glb`);function l(){let{scene:e}=a(c,!1,!0),n=(0,o.useMemo)(()=>{let n=e.clone(!0);return n.traverse(e=>{let n=e;if(!n.isMesh)return;let r=new t({color:`#ffffff`,vertexColors:!0,roughness:.96,metalness:0,envMapIntensity:.35,fog:!0,side:0});r.customProgramCacheKey=()=>`serra_montanhas_micro_atm`,r.onBeforeCompile=e=>{e.vertexShader=e.vertexShader.replace(`#include <common>`,`#include <common>
             varying vec3 vSerraPos;
             varying vec3 vSerraNor;`).replace(`#include <worldpos_vertex>`,`#include <worldpos_vertex>
             vSerraPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
@@ -24,4 +24,4 @@ import{Bn as e,Kn as t,Pt as n,Un as r,wn as i}from"./events-e51d7528.esm-BBOnX4
             float sVale = 1.0 - smoothstep(4.0, 70.0, vSerraPos.y);
             float sAtm = clamp(sLonge * 0.55 + sVale * 0.35 * (0.4 + 0.6 * sLonge), 0.0, 0.82);
             gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor * vec3(0.96, 1.0, 1.06), sAtm);
-            #endif`)},t.material=r,t.castShadow=!1,t.receiveShadow=!1,t.frustumCulled=!0}),t},[e]);return(0,s.jsx)(`primitive`,{object:t})}a.preload(c,!1,!0);export{l as default};
+            #endif`)},n.material=r,n.castShadow=!1,n.receiveShadow=!1,n.frustumCulled=!0}),n},[e]);return(0,s.jsx)(`primitive`,{object:n})}a.preload(c,!1,!0);export{l as default};
