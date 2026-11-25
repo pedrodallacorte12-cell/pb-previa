@@ -107,7 +107,7 @@ import{Ft as e,ir as t,kn as n,sr as r,ur as i}from"./events-e51d7528.esm-LHO7OE
             float sNoite = uAtmFog[3].z;
             vec3 sAtmRay = normalize(vSerraPos - cameraPosition);
             float sDotRaw = dot(sAtmRay, uAtmFog[0].xyz);
-            float sAtmSun = pow(max(sDotRaw, 0.0), max(1.4, uAtmFog[2].y * 0.72));
+            float sAtmSun = pow(max(sDotRaw, 1e-4), max(1.4, uAtmFog[2].y * 0.72));
             float sAntiSun = clamp(0.5 - 0.5 * sDotRaw, 0.0, 1.0);
 
             // Dourado sutil nas cristas voltadas ao sol baixo no entardecer; silhueta mais fria/dessaturada à noite
