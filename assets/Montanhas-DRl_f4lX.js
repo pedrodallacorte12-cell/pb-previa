@@ -1,4 +1,4 @@
-import{Jn as e,Nt as t,Zn as n,er as r,wn as i}from"./events-e51d7528.esm-Ox0bj2Ds.js";import{t as a}from"./Gltf-CVSNoIWC.js";var o=r(n(),1),s=i(),c=e(`modelos/montanhas.glb`);function l(){let{scene:e}=a(c,!1,!0),n=(0,o.useMemo)(()=>{let n=e.clone(!0);return n.traverse(e=>{let n=e;if(!n.isMesh)return;let r=new t({color:`#ffffff`,vertexColors:!0,roughness:.94,metalness:0,envMapIntensity:.42,fog:!0,side:0});r.customProgramCacheKey=()=>`serra_montanhas_relevo_v3`,r.onBeforeCompile=e=>{e.vertexShader=e.vertexShader.replace(`#include <common>`,`#include <common>
+import{Ft as e,ir as t,kn as n,sr as r,ur as i}from"./events-e51d7528.esm-LHO7OEip.js";import{t as a}from"./Gltf-nN8Mjbe2.js";var o=i(r(),1),s=n(),c=t(`modelos/montanhas.glb`);function l(){let{scene:t}=a(c,!1,!0),n=(0,o.useMemo)(()=>{let n=t.clone(!0);return n.traverse(t=>{let n=t;if(!n.isMesh)return;let r=new e({color:`#ffffff`,vertexColors:!0,roughness:.94,metalness:0,envMapIntensity:.42,fog:!0,side:0});r.customProgramCacheKey=()=>`serra_montanhas_relevo_v3`,r.onBeforeCompile=e=>{e.vertexShader=e.vertexShader.replace(`#include <common>`,`#include <common>
             varying vec3 vSerraPos;
             varying vec3 vSerraNor;`).replace(`#include <worldpos_vertex>`,`#include <worldpos_vertex>
             vSerraPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
@@ -121,4 +121,4 @@ import{Jn as e,Nt as t,Zn as n,er as r,wn as i}from"./events-e51d7528.esm-Ox0bj2
             vec3 sMistFrio = fogColor * mix(vec3(1.0), vec3(0.88, 0.96, 1.12), sAntiSun * 0.45 * sEnt);
             vec3 sMistCol = mix(sMistFrio, uAtmFog[1].rgb, clamp(sAtmSun * mix(0.65, 0.88, sEnt), 0.0, 0.90));
             gl_FragColor.rgb = mix(gl_FragColor.rgb, sMistCol, sValeMist);
-            #endif`)},n.material=r,n.castShadow=!1,n.receiveShadow=!1,n.frustumCulled=!0}),n},[e]);return(0,s.jsx)(`primitive`,{object:n})}a.preload(c,!1,!0);export{l as default};
+            #endif`)},n.material=r,n.castShadow=!1,n.receiveShadow=!1,n.frustumCulled=!0}),n},[t]);return(0,s.jsx)(`primitive`,{object:n})}a.preload(c,!1,!0);export{l as default};

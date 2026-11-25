@@ -50,3 +50,9 @@ Todos os modelos de veículos e pedestres adicionados em `public/modelos/` são 
 ## Carros adicionais (`modelos/carros/*.glb`)
 
 - Variantes geradas por `scripts/gerar_carros_variantes.py` a partir do gerador procedural próprio (`scripts/gerar_carros_blender.py`) — sem assets de terceiros.
+
+## Pedestres estáticos extras (7 modelos)
+
+- **Autor:** Quaternius — *Posed Background Characters* (Aug 2018) e variantes criança/idoso no mesmo padrão, CC0 1.0.
+- **Espelho:** https://github.com/beep2bleep/FreeAssetsByKenneyNLandQuaternius
+- **Adaptações:** paleta UV 8×1, pés em y=0, meshopt; usados só no desktop nos grupos parados.
